@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LuckySpin 9 - Non-Repeating Name Selector Wheel</title>
+  <meta name="description" content="A premium wheel spinner for 9 names where selected names are never repeated until the full pool has been drawn.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Ambient background glow elements -->
+  <div class="ambient-glow glow-1"></div>
+  <div class="ambient-glow glow-2"></div>
+  <div class="ambient-glow glow-3"></div>
+
+  <!-- Main App Container -->
+  <div class="app-layout">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M12 2v20"></path>
+            <path d="M12 12l7.07-7.07"></path>
+            <path d="M12 12l-7.07 7.07"></path>
+            <circle cx="12" cy="12" r="3" fill="currentColor"></circle>
+          </svg>
+        </div>
+        <div>
+          <h1 class="brand-title">LuckySpin <span class="badge-highlight">Non-Repeat</span></h1>
+          <p class="brand-subtitle">Fair & transparent selection • Each name is picked exactly once</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <!-- Audio Toggle -->
+        <button id="soundToggleBtn" class="glass-btn icon-btn" title="Toggle Sound Effects" aria-label="Toggle Sound">
+          <svg id="soundOnIcon" class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+          </svg>
+          <svg id="soundOffIcon" class="icon hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <line x1="23" y1="9" x2="17" y2="15"></line>
+            <line x1="17" y1="9" x2="23" y2="15"></line>
+          </svg>
+        </button>
+
+        <!-- Reset Round Pool -->
+        <button id="resetPoolBtn" class="glass-btn" title="Reset all names back into the wheel">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+            <path d="M3 3v5h5"></path>
+          </svg>
+          <span>Reset Pool</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Round Status Banner -->
+    <section class="round-status-bar" id="statusBar">
+      <div class="status-item">
+        <span class="status-label">Round Progress</span>
+        <div class="progress-track">
+          <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+        </div>
+        <span class="status-value" id="progressText">0 of 9 Picked</span>
+      </div>
+      <div class="status-divider"></div>
+      <div class="status-item">
+        <span class="status-label">Wheel Pool</span>
+        <span class="status-pill remaining" id="remainingCountBadge">9 Remaining</span>
+      </div>
+      <div class="status-divider"></div>
+      <div class="status-item">
+        <span class="status-label">Status</span>
+        <span class="status-pill active" id="roundStatusBadge">In Progress</span>
+      </div>
+    </section>
+
+    <!-- Main Content Grid -->
+    <main class="main-grid">
+      <!-- Left Column: The Wheel Stage -->
+      <section class="wheel-stage-card" aria-label="Spinner Wheel Container">
+        <!-- Wheel Outer Decorative Bezel -->
+        <div class="wheel-outer-wrapper">
+          <!-- Top Arrow Pointer Ticker with Physical Flapper Pivot -->
+          <div class="ticker-container" id="tickerContainer">
+            <div class="ticker-flapper" id="tickerFlapper"></div>
+            <div class="ticker-pivot"></div>
+          </div>
+
+          <!-- Interactive Wheel Canvas -->
+          <div class="canvas-container" id="canvasContainer">
+            <canvas id="wheelCanvas" width="560" height="560"></canvas>
+            
+            <!-- Central Spin Trigger Hub -->
+            <button id="spinBtn" class="center-spin-hub" aria-label="Spin the wheel">
+              <div class="hub-pulse-ring"></div>
+              <div class="hub-inner-core">
+                <span class="hub-text">SPIN</span>
+                <span class="hub-subtext" id="hubSubtext">READY</span>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Wheel Controls / Quick Action Bar -->
+        <div class="wheel-quick-actions">
+          <button id="spinActionBtn" class="cta-spin-btn">
+            <span class="btn-sparkle">✨</span>
+            <span class="btn-label">SPIN THE WHEEL</span>
+            <span class="btn-kbd">Space</span>
+          </button>
+          <button id="shuffleBtn" class="glass-btn secondary" title="Randomize slice order">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="16 3 21 3 21 8"></polyline>
+              <line x1="4" y1="20" x2="21" y2="3"></line>
+              <polyline points="21 16 21 21 16 21"></polyline>
+              <line x1="15" y1="15" x2="21" y2="21"></line>
+              <line x1="4" y1="4" x2="9" y2="9"></line>
+            </svg>
+            <span>Shuffle</span>
+          </button>
+        </div>
+
+        <!-- Latest Winner Callout Strip -->
+        <div class="latest-winner-strip" id="latestWinnerStrip">
+          <span class="strip-prefix">Latest Selected:</span>
+          <span class="strip-name" id="latestWinnerName">— None yet —</span>
+          <span class="strip-tag" id="latestWinnerTag">Waiting for 1st spin</span>
+        </div>
+      </section>
+
+      <!-- Right Column: Name Roster & Elimination History -->
+      <aside class="roster-panel" aria-label="Names Management Panel">
+        <!-- Tab Navigation -->
+        <div class="panel-tabs">
+          <button class="tab-btn active" id="tabRosterBtn" data-tab="roster">
+            <span>Name Roster</span>
+            <span class="tab-counter" id="totalNamesCounter">9</span>
+          </button>
+          <button class="tab-btn" id="tabHistoryBtn" data-tab="history">
+            <span>Draw Order</span>
+            <span class="tab-counter" id="drawnHistoryCounter">0</span>
+          </button>
+        </div>
+
+        <!-- TAB 1: ROSTER MANAGER -->
+        <div class="tab-content active" id="tabRoster">
+          <!-- Add Name Form -->
+          <form id="addNameForm" class="add-name-form">
+            <div class="input-group">
+              <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+              <input 
+                type="text" 
+                id="nameInput" 
+                placeholder="Enter candidate name..." 
+                maxlength="24" 
+                autocomplete="off"
+              >
+              <button type="submit" id="addNameBtn" class="add-btn">
+                <span>Add</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+              </button>
+            </div>
+            <div class="input-hint">
+              <span>Supports up to 9 names for the complete round</span>
+              <button type="button" id="loadPresetsBtn" class="link-btn">Load 9 Defaults</button>
+            </div>
+          </form>
+
+          <!-- Roster Cards Container -->
+          <div class="roster-list-header">
+            <span class="list-title">Candidates (<span id="activeCandidatesCount">9</span> in wheel)</span>
+            <button id="clearAllBtn" class="danger-link-btn">Clear All</button>
+          </div>
+
+          <div class="names-list" id="namesList">
+            <!-- Dynamically populated candidate item cards -->
+          </div>
+        </div>
+
+        <!-- TAB 2: DRAW HISTORY & DRAFT ORDER -->
+        <div class="tab-content" id="tabHistory">
+          <div class="history-header">
+            <div>
+              <h3 class="history-title">Selection Timeline</h3>
+              <p class="history-desc">Chronological order of chosen candidates</p>
+            </div>
+            <button id="exportHistoryBtn" class="glass-btn small" title="Copy results">
+              <svg class="icon small" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              <span>Copy</span>
+            </button>
+          </div>
+
+          <div class="history-timeline" id="historyTimeline">
+            <!-- Dynamically populated history order entries -->
+            <div class="empty-history" id="emptyHistoryMsg">
+              <div class="empty-icon">🎯</div>
+              <p>No names drawn yet this round!</p>
+              <span>Spin the wheel to make your first selection.</span>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <!-- Winner Celebration Overlay Modal -->
+  <div class="modal-backdrop" id="winnerModal" aria-hidden="true">
+    <div class="modal-card">
+      <div class="winner-glow"></div>
+      
+      <div class="winner-badge">
+        <span class="trophy-emoji">🏆</span>
+        <span id="winnerRankText">Selected #1</span>
+      </div>
+
+      <h2 class="winner-headline">We Have a Winner!</h2>
+      
+      <div class="winner-name-display" id="modalWinnerName">Alex Johnson</div>
+      
+      <p class="winner-note" id="modalWinnerNote">
+        This name will be removed from future spins until all remaining candidates are drawn.
+      </p>
+
+      <div class="winner-stats-pill">
+        <div class="stat">
+          <span class="stat-number" id="modalRemainingCount">8</span>
+          <span class="stat-label">Names Left</span>
+        </div>
+        <div class="stat-sep"></div>
+        <div class="stat">
+          <span class="stat-number" id="modalCompletedCount">1</span>
+          <span class="stat-label">Drawn So Far</span>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button id="continueSpinBtn" class="modal-cta-btn">
+          <span>Continue Next Spin</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Grand Round Complete Modal -->
+  <div class="modal-backdrop" id="roundCompleteModal" aria-hidden="true">
+    <div class="modal-card grand-celebration">
+      <div class="winner-glow grand"></div>
+      <div class="grand-crown">👑</div>
+      <h2 class="grand-title">All Names Drawn!</h2>
+      <p class="grand-desc">Every single candidate from the 9-name pool has been selected without repetition!</p>
+      
+      <div class="podium-order-list" id="grandOrderList">
+        <!-- List of all 9 in order of pick -->
+      </div>
+
+      <div class="modal-actions">
+        <button id="startNewRoundBtn" class="modal-cta-btn grand-btn">
+          <span>Start Brand New Round</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fullscreen Particle Confetti Canvas -->
+  <canvas id="confettiCanvas"></canvas>
+
+  <!-- Notification Toast -->
+  <div id="toast" class="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
