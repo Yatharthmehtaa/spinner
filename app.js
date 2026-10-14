@@ -767,25 +767,30 @@
 
     // Progress Bar
     const progressPercent = totalNames > 0 ? (drawnCount / totalNames) * 100 : 0;
-    progressBar.style.width = `${progressPercent}%`;
-    progressText.textContent = `${drawnCount} of ${totalNames} Picked`;
+    if (progressBar) progressBar.style.width = `${progressPercent}%`;
+    if (progressText) progressText.textContent = `${drawnCount} of ${totalNames} Picked`;
 
     // Badges
-    remainingCountBadge.textContent = `${remainingCount} Remaining`;
-    if (remainingCount === 0 && totalNames > 0) {
-      roundStatusBadge.textContent = 'Round Complete!';
-      roundStatusBadge.className = 'status-pill finished';
-      hubSubtext.textContent = 'DONE';
-    } else {
-      roundStatusBadge.textContent = `Round ${state.roundNumber}`;
-      roundStatusBadge.className = 'status-pill active';
-      hubSubtext.textContent = 'READY';
+    if (remainingCountBadge) remainingCountBadge.textContent = `${remainingCount} Remaining`;
+    
+    // Status Badge
+    const statusBadge = roundStatusBadge || document.getElementById('roundStatusBadge');
+    if (statusBadge) {
+      if (remainingCount === 0 && totalNames > 0) {
+        statusBadge.textContent = 'Round Complete!';
+        statusBadge.className = 'status-pill finished';
+        if (hubSubtext) hubSubtext.textContent = 'DONE';
+      } else {
+        statusBadge.textContent = `Round ${state.roundNumber}`;
+        statusBadge.className = 'status-pill active';
+        if (hubSubtext) hubSubtext.textContent = 'READY';
+      }
     }
 
     // Counters
-    totalNamesCounter.textContent = totalNames;
-    drawnHistoryCounter.textContent = drawnCount;
-    activeCandidatesCount.textContent = remainingCount;
+    if (totalNamesCounter) totalNamesCounter.textContent = totalNames;
+    if (drawnHistoryCounter) drawnHistoryCounter.textContent = drawnCount;
+    if (activeCandidatesCount) activeCandidatesCount.textContent = remainingCount;
 
     // Daily Streak Badge in Status Bar
     const dailyStreakBadge = document.getElementById('dailyStreakBadge');
@@ -801,14 +806,16 @@
     }
 
     // Latest winner strip
-    if (state.drawnHistory.length > 0) {
-      const lastWinner = state.drawnHistory[state.drawnHistory.length - 1];
-      latestWinnerName.textContent = lastWinner.name;
-      const dayLabel = lastWinner.dayLabel || `Day ${lastWinner.rank}`;
-      latestWinnerTag.textContent = `${dayLabel} (${lastWinner.timestamp})`;
-    } else {
-      latestWinnerName.textContent = '— None yet —';
-      latestWinnerTag.textContent = 'Waiting for Day 1 spin';
+    if (latestWinnerName && latestWinnerTag) {
+      if (state.drawnHistory.length > 0) {
+        const lastWinner = state.drawnHistory[state.drawnHistory.length - 1];
+        latestWinnerName.textContent = lastWinner.name;
+        const dayLabel = lastWinner.dayLabel || `Day ${lastWinner.rank}`;
+        latestWinnerTag.textContent = `${dayLabel} (${lastWinner.timestamp})`;
+      } else {
+        latestWinnerName.textContent = '— None yet —';
+        latestWinnerTag.textContent = 'Waiting for Day 1 spin';
+      }
     }
 
     // Render Candidate Roster List
