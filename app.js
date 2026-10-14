@@ -348,7 +348,7 @@
     // Default to 9 sample names if none saved
     if (!state.allNames || state.allNames.length === 0) {
       loadDefaultNames();
-    } else if (state.remainingIds.length === 0 && state.allNames.length > 0) {
+    } else if (state.remainingIds.length === 0 && state.drawnHistory.length === 0 && state.allNames.length > 0) {
       state.remainingIds = state.allNames.map(n => n.id);
     }
 
@@ -715,13 +715,22 @@
     // 1. Remove winner from remaining pool (NON-REPEATING LOGIC)
     state.remainingIds = state.remainingIds.filter(id => id !== winner.id);
 
-    // 2. Add to draw history
+    // 2. Add to draw history with Day number and date/time
     const pickRank = state.drawnHistory.length + 1;
+    const now = new Date();
+    const formattedDate = now.toLocaleDateString([], { month: 'short', day: 'numeric' });
+    const formattedTime = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    
     const historyEntry = {
       id: winner.id,
       name: winner.name,
       rank: pickRank,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+      dayNumber: pickRank,
+      dayLabel: `Day ${pickRank} of ${state.allNames.length}`,
+      dateStr: formattedDate,
+      timeStr: formattedTime,
+      timestamp: `${formattedDate} • ${formattedTime}`,
+      isoTime: now.toISOString(),
       round: state.roundNumber
     };
     state.drawnHistory.push(historyEntry);
@@ -778,14 +787,28 @@
     drawnHistoryCounter.textContent = drawnCount;
     activeCandidatesCount.textContent = remainingCount;
 
+    // Daily Streak Badge in Status Bar
+    const dailyStreakBadge = document.getElementById('dailyStreakBadge');
+    if (dailyStreakBadge) {
+      if (remainingCount === 0 && totalNames > 0) {
+        dailyStreakBadge.textContent = 'All 9 Days Done!';
+        dailyStreakBadge.className = 'status-pill finished';
+      } else {
+        const nextDayNum = drawnCount + 1;
+        dailyStreakBadge.textContent = `Day ${nextDayNum} of ${totalNames}`;
+        dailyStreakBadge.className = 'status-pill active';
+      }
+    }
+
     // Latest winner strip
     if (state.drawnHistory.length > 0) {
       const lastWinner = state.drawnHistory[state.drawnHistory.length - 1];
       latestWinnerName.textContent = lastWinner.name;
-      latestWinnerTag.textContent = `Pick #${lastWinner.rank} (${lastWinner.timestamp})`;
+      const dayLabel = lastWinner.dayLabel || `Day ${lastWinner.rank}`;
+      latestWinnerTag.textContent = `${dayLabel} (${lastWinner.timestamp})`;
     } else {
       latestWinnerName.textContent = '— None yet —';
-      latestWinnerTag.textContent = 'Waiting for 1st spin';
+      latestWinnerTag.textContent = 'Waiting for Day 1 spin';
     }
 
     // Render Candidate Roster List
@@ -816,7 +839,8 @@
       item.className = `candidate-item ${isRemaining ? '' : 'drawn'}`;
 
       const drawnInfo = state.drawnHistory.find(h => h.id === candidate.id);
-      const statusText = isRemaining ? 'In Wheel' : `Drawn #${drawnInfo ? drawnInfo.rank : ''}`;
+      const dayText = drawnInfo ? (drawnInfo.dayLabel || `Day ${drawnInfo.rank}`) : '';
+      const statusText = isRemaining ? 'In Wheel' : `${dayText}`;
       const statusClass = isRemaining ? 'in-pool' : 'drawn';
 
       item.innerHTML = `
@@ -862,7 +886,10 @@
       el.innerHTML = `
         <div class="history-entry-main">
           <span class="history-rank">#${entry.rank}</span>
-          <span class="history-winner-name">${entry.name}</span>
+          <div class="history-entry-details">
+            <span class="history-winner-name">${entry.name}</span>
+            <span class="history-day-tag">${entry.dayLabel || 'Day ' + entry.rank}</span>
+          </div>
         </div>
         <span class="history-timestamp">${entry.timestamp}</span>
       `;
@@ -1098,7 +1125,7 @@
       }
     });
 
-    // Export / Copy History
+    // Export / Copy History with Day tags
     exportHistoryBtn.addEventListener('click', () => {
       if (state.drawnHistory.length === 0) {
         showToast('No history to copy yet!');
@@ -1106,15 +1133,37 @@
       }
 
       const text = state.drawnHistory
-        .map(h => `${h.rank}. ${h.name} (${h.timestamp})`)
+        .map(h => `${h.dayLabel || 'Day ' + h.rank}: ${h.name} (${h.timestamp})`)
         .join('\n');
 
       navigator.clipboard.writeText(text).then(() => {
-        showToast('Selection order copied to clipboard! 📋');
+        showToast('9-Day Selection order copied to clipboard! 📋');
       }).catch(() => {
         showToast('Copied text!');
       });
     });
+
+    // Backup & Restore Progress
+    const backupBtn = document.getElementById('backupBtn');
+    if (backupBtn) {
+      backupBtn.addEventListener('click', () => {
+        const backupData = JSON.stringify({
+          luckyspin_version: '1.0',
+          allNames: state.allNames,
+          remainingIds: state.remainingIds,
+          drawnHistory: state.drawnHistory,
+          roundNumber: state.roundNumber,
+          soundEnabled: state.soundEnabled,
+          exportedAt: new Date().toISOString()
+        }, null, 2);
+
+        navigator.clipboard.writeText(backupData).then(() => {
+          showToast('Progress backup JSON copied to clipboard! 💾');
+        }).catch(() => {
+          showToast('Backup created!');
+        });
+      });
+    }
 
     // Modals
     continueSpinBtn.addEventListener('click', () => {

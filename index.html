@@ -77,8 +77,8 @@
       </div>
       <div class="status-divider"></div>
       <div class="status-item">
-        <span class="status-label">Status</span>
-        <span class="status-pill active" id="roundStatusBadge">In Progress</span>
+        <span class="status-label">Day Counter</span>
+        <span class="status-pill active" id="dailyStreakBadge">Day 1 of 9</span>
       </div>
     </section>
 
@@ -198,13 +198,23 @@
               <h3 class="history-title">Selection Timeline</h3>
               <p class="history-desc">Chronological order of chosen candidates</p>
             </div>
-            <button id="exportHistoryBtn" class="glass-btn small" title="Copy results">
-              <svg class="icon small" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-              </svg>
-              <span>Copy</span>
-            </button>
+            <div class="history-actions" style="display: flex; gap: 0.4rem;">
+              <button id="backupBtn" class="glass-btn small" title="Backup or transfer your 9-day progress">
+                <svg class="icon small" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                  <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                  <polyline points="7 3 7 8 15 8"></polyline>
+                </svg>
+                <span>Backup</span>
+              </button>
+              <button id="exportHistoryBtn" class="glass-btn small" title="Copy results">
+                <svg class="icon small" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+                <span>Copy</span>
+              </button>
+            </div>
           </div>
 
           <div class="history-timeline" id="historyTimeline">

@@ -1039,11 +1039,24 @@ body {
   color: #fbbf24;
 }
 
+.history-entry-details {
+  display: flex;
+  flex-direction: column;
+}
+
 .history-winner-name {
   font-family: var(--font-heading);
-  font-size: 1rem;
+  font-size: 0.96rem;
   font-weight: 800;
   color: #fff;
+}
+
+.history-day-tag {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #818cf8;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .history-timestamp {
